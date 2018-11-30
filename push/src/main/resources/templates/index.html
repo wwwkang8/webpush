@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Desktop Notification</title>
+    </head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <body>
+
+        {{#sessionedMember}}
+            {{memName}}님 환영합니다.
+        <input type="hidden" id="memberGrade" value="{{grade.gradeInfo}}">
+        {{/sessionedMember}}
+        {{^sessionedMember}}
+            <b>로그인 해주세요</b>
+        {{/sessionedMember}}
+
+        <a href="#" id="dnperm">Request Permission</a>
+        <a href="#" id="dntrigger">Trigger</a>
+
+    <script>
+        var dnperm=document.getElementById('dnperm');
+        var dntrigger=document.getElementById('dntrigger');
+
+        dnperm.addEventListener('click', function(e){
+           e.preventDefault();
+
+           if(!window.Notification){
+               alert("Sorry, notification are not supported. ");
+           }else{
+               Notification.requestPermission(function(p){
+                  if(p=='denied'){
+                      alert("You have denied notifications.");
+                  }else if(p === 'granted'){
+                      alert("You have granted notifications");
+                  }
+               });
+           }
+        });
+
+        //Simulate an event
+        dntrigger.addEventListener('click', function(e){
+            var notify;
+            var notificationList=null;
+
+            var grade=$("#memberGrade").val();
+            $.ajax({
+                type:"get",
+                url:"/getNotifications",
+                data:"grade="+grade
+                // ,
+                // success: function(data){
+                //     alert("dfdf");
+                //     notificationList=data;
+                // }
+
+            }).done(function(data) {
+                    alert( "Data : " + data );
+            });
+
+            e.preventDefault();
+
+            if(Notification.requestPermission()==='default'){
+                alert('Please allow notifications before doing this.');
+            }else{
+                notify = new Notification("New message from Alex", {
+                    body: 'How are you today? It really is a lovely day.',
+                    tag: '1234'
+                });
+               /* var grade=$("#memberGrade").val();
+                alert(grade);
+                $.ajax({
+                    type:"get",
+                    url:"/getNotifications",
+                    async:false,
+                    data:"grade="+grade,
+                    success: function(data){
+                        alert("dfdf");
+                        notificationList=data;
+                    }
+
+                });
+                notify=new Notification("운영자로부터 새로운 메시지",{
+                    body: notificationList[0].notiContent,
+                    tag:notificationList[0].id
+                });*/
+
+                notify.onclick=function(){
+                    window.location='?message='+this.tag;
+                }
+            }
+        })
+    </script>
+    </body>
+
+</html>
